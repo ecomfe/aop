@@ -2,7 +2,8 @@
 
 1. function 拦截
 2. object method 拦截
-3. ioc component method 拦截
+3. Class method 拦截
+4. ioc component method 拦截
 
 ## 总体架构
 ![aop 总体架构](./img/aop-architecture.png)
