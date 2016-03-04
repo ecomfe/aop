@@ -46,6 +46,18 @@ IoC 桥接支持
 
 组合 Aspect，提供针对对象方法拦截的 API
 
+#### ObjectProxy
+ 
+对象拦截代理
+
+### Class Method API
+
+组合 Aspect，提供针对Class方法拦截的 API
+
+#### ClassProxy
+
+类拦截代理
+
 ### IoC Component API
 
 基于IoC Bridge， 提供与 IoC 整合的配置语法
