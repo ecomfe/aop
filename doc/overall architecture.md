@@ -43,6 +43,144 @@ IoC 桥接支持
 
 提供针对函数执行拦截的API
 
+#### before(functionToAdvise, beforeFunction)
+
+返回一个新的函数, 执行逻辑为, 在 functionToAdvise 函数执行前, 执行 beforeFunction, beforeFunction 接收与 functionToAdvise 一致的参数 
+
+```javascript
+var functionToAdvise = function () {
+    console.log('functionToAdvise exec');
+};
+var advisedFunction = aop.before(functionToAdvise, function () {
+    console.log('arguments length:', argument.length);
+});
+
+// log:
+// arguments length: 3
+// functionToAdvise exec
+advisedFunction(1, 2, 3); 
+```
+
+#### afterReturning(functionToAdvise, afterReturningFunction)
+
+返回一个新的函数, 执行逻辑为, 在 functionToAdvise 函数正常返回后, 执行 afterReturningFunction, 
+afterReturningFunction 接收 functionToAdvise 执行后的返回结果作为唯一参数
+
+```javascript
+var functionToAdvise = function () {
+    console.log('functionToAdvise exec');
+    return 'functionToAdvise';
+};
+var advisedFunction = aop.afterReturning(functionToAdvise, function (returnValue) {
+    console.log('return value: ', returnValue);
+});
+
+// log:
+// functionToAdvise exec
+// return value: functionToAdvise
+advisedFunction(); 
+```
+
+#### afterThrowing(functionToAdvise, afterThrowingFunction)
+
+返回一个新的函数, 执行逻辑为, 在 functionToAdvise 函数抛出异常时, 执行 afterThrowingFunction, afterThrowingFunction 接收 functionToAdvise 抛出的异常对象作为唯一参数
+
+```javascript
+var functionToAdvise = function (throwError) {
+    console.log('functionToAdvise exec');
+    if(throwError) {
+        throw new Error('functionToAdvise error');
+    }
+};
+var advisedFunction = aop.afterThrowing(functionToAdvise, function (e) {
+    console.log('execption: ', e.message);
+});
+
+// log:
+// functionToAdvise exec
+advisedFunction(); 
+
+// log:
+// functionToAdvise exec
+// execption: functionToAdvise error
+advisedFunction(true); 
+```
+
+#### after(functionToAdvise, afterFunction)
+
+返回一个新的函数, 执行逻辑为, 在 functionToAdvise 函数正常返回或抛出异常时, 执行 afterFunction, 
+afterFunction 接收 functionToAdvise 的返回结果或抛出的异常对象作为唯一参数
+
+```javascript
+var functionToAdvise = function (throwError) {
+    console.log('functionToAdvise exec');
+    if(throwError) {
+        throw new Error('error');
+    }
+    else {
+        return 'normal return';    
+    }
+};
+var advisedFunction = aop.after(functionToAdvise, function (errorOrResult) {
+    console.log('functionToAdvise result: ', e.message || errorOrResult);
+});
+
+// log:
+// functionToAdvise exec
+// functionToAdvise result: normal return
+advisedFunction(); 
+
+// log:
+// functionToAdvise exec
+// functionToAdvise result: error
+advisedFunction(true); 
+```
+
+#### around(functionToAdvise, aroundFunction)
+
+返回一个新的函数, 执行逻辑为, 执行 aroundFunction, aroundFunction 接收一个 ProceedingJoinPoint 对象作为参数, 调用其 process 方法将执行 functionToAdvise.
+ 
+```javascript
+var functionToAdvise = function () {
+    console.log('functionToAdvise exec');
+    return 'functionToAdvise return value';
+};
+var advisedFunction = aop.around(functionToAdvise, function (joinPoint) {
+    console.log('before functionToAdvise exec');
+    var result = joinPoint.proceed();
+    console.log('functionToAdvise exec result: ', result);
+    console.log('after functionToAdvise exec');
+});
+
+// log:
+// before functionToAdvise exec
+// functionToAdvise exec
+// functionToAdvise exec result: functionToAdvise return value
+// after functionToAdvise exec
+advisedFunction(); 
+``` 
+ 
+#### ProceedingJoinPoint
+
+```javascript
+joinpoint = {
+    // 函数被调用时的上下文
+    target: <any type>,
+
+    // 传给外层函数的参数
+    args: Array,
+
+    // 原方法名
+    method: string,
+
+    // 被调用时, 会调用被拦截的原函数
+    // 未传入参数调用时, 会传入外层函数被调用时的原始参数,
+    // 传参调用时候, 原始参数不会被传入
+    proceed: Function
+}
+```
+
+
 ### Object Method API
 
 组合 Aspect，提供针对对象方法拦截的 API
