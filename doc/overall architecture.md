@@ -47,6 +47,8 @@ IoC 桥接支持
 
 返回一个新的函数, 执行逻辑为, 在 functionToAdvise 函数执行前, 执行 beforeFunction, beforeFunction 接收与 functionToAdvise 一致的参数 
 
+**除非抛异常, 否则不会中断函数的执行**
+
 ```javascript
 var functionToAdvise = function () {
     console.log('functionToAdvise exec');
@@ -108,62 +110,66 @@ advisedFunction(true);
 
 #### after(functionToAdvise, afterFunction)
 
-返回一个新的函数, 执行逻辑为, 在 functionToAdvise 函数正常返回或抛出异常时, 执行 afterFunction, 
-afterFunction 接收 functionToAdvise 的返回结果或抛出的异常对象作为唯一参数
+返回一个新的函数, 执行逻辑为, 在 functionToAdvise 函数正常返回或抛出异常时, 执行 afterFunction
 
 ```javascript
 var functionToAdvise = function (throwError) {
-    console.log('functionToAdvise exec');
     if(throwError) {
+        console.log('functionToAdvise exception');
         throw new Error('error');
     }
     else {
+        console.log('functionToAdvise normal exec');
         return 'normal return';    
     }
 };
-var advisedFunction = aop.after(functionToAdvise, function (errorOrResult) {
-    console.log('functionToAdvise result: ', e.message || errorOrResult);
+var advisedFunction = aop.after(functionToAdvise, function () {
+    console.log('after functionToAdvise');
 });
 
 // log:
-// functionToAdvise exec
-// functionToAdvise result: normal return
+// functionToAdvise normal exec
+// after functionToAdvise
 advisedFunction(); 
 
 // log:
-// functionToAdvise exec
-// functionToAdvise result: error
+// functionToAdvise exception
+// after functionToAdvise
 advisedFunction(true); 
 ```
 
 #### around(functionToAdvise, aroundFunction)
 
-返回一个新的函数, 执行逻辑为, 执行 aroundFunction, aroundFunction 接收一个 ProceedingJoinPoint 对象作为参数, 调用其 process 方法将执行 functionToAdvise.
+返回一个新的函数, 执行逻辑为, 执行 aroundFunction, aroundFunction 接收一个 ProceedingJoinPoint 对象作为参数, 
+调用其 proceed/proceedApply 方法将执行 functionToAdvise.
  
 ```javascript
 var functionToAdvise = function () {
-    console.log('functionToAdvise exec');
+    console.log('functionToAdvise exec arguments: ', [].slice.call(arguments, 0));
     return 'functionToAdvise return value';
 };
 var advisedFunction = aop.around(functionToAdvise, function (joinPoint) {
     console.log('before functionToAdvise exec');
+    // proceed/proceddApply 可以多次调用, 会多次执行原函数, proceedApply 可以改变上下文和参数信息
     var result = joinPoint.proceed();
+    result = joinPoint.proceedApply(null, [1, 2]);
     console.log('functionToAdvise exec result: ', result);
     console.log('after functionToAdvise exec');
 });
 
 // log:
 // before functionToAdvise exec
-// functionToAdvise exec
+// functionToAdvise exec arguments: 1,2,3 
+// functionToAdvise exec arguments: 1,2 
 // functionToAdvise exec result: functionToAdvise return value
 // after functionToAdvise exec
-advisedFunction(); 
+advisedFunction(1, 2, 3); 
 ``` 
  
 #### ProceedingJoinPoint
 
 ```javascript
-joinpoint = {
+joinPoint = {
     // 函数被调用时的上下文
     target: <any type>,
 
@@ -173,10 +179,11 @@ joinpoint = {
     // 原方法名
     method: string,
 
-    // 被调用时, 会调用被拦截的原函数
-    // 未传入参数调用时, 会传入外层函数被调用时的原始参数,
-    // 传参调用时候, 原始参数不会被传入
-    proceed: Function
+    // 被调用时, 会调用被拦截的原函数, 并传入原始参数
+    proceed: Function,
+    
+    // 被调用时, 会调用被拦截的原函数, 首个参数为被拦截函数要执行时的上下文, 第二个参数为要传递给被拦截函数的参数数组
+    proceedApply: Function
 }
 ```
 
