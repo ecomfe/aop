@@ -13,7 +13,7 @@ export let around = createAdviceAPI('around');
 
 
 function createAdviceAPI(adviceType) {
-    return function (toAdvise, matcher, beforeAdvice) {
+    return function (toAdvise, matcher, advice) {
         if (typeof toAdvise === 'function') {
             return functionAdvice[adviceType](toAdvise, matcher);
         }
