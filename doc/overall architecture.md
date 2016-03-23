@@ -23,9 +23,9 @@
 - AfterThrowingAdvice 异常
 - AroundAdvice 环绕
 
-### PointCut
+### PointCut/Matcher
 
-切点（连接点筛选）功能
+切点（连接点筛选）功能, 内部概念, 外部感知为 string, Regex, Function 三个类型
 
 - StringPointCut 字符串过滤匹配
 - RegexPointCut 正则过滤匹配
@@ -123,10 +123,8 @@ var functionToAdvise = function (throwError) {
         console.log('functionToAdvise exception');
         throw new Error('error');
     }
-    else {
-        console.log('functionToAdvise normal exec');
-        return 'normal return';
-    }
+
+    console.log('functionToAdvise normal exec');
 };
 var advisedFunction = aop.after(functionToAdvise, function () {
     console.log('after functionToAdvise');
@@ -155,7 +153,7 @@ var functionToAdvise = function () {
 };
 var advisedFunction = aop.around(functionToAdvise, function (joinPoint) {
     console.log('before functionToAdvise exec');
-    // proceed/proceddApply 可以多次调用, 会多次执行原函数, proceedApply 可以改变上下文和参数信息
+    // proceed/proceddApply 可以多次调用, 会多次执行原函数, proceedApply 可以改变 this 和参数信息
     var result = joinPoint.proceed();
     result = joinPoint.proceedApply(null, [1, 2]);
     console.log('functionToAdvise exec result: ', result);
@@ -171,12 +169,12 @@ var advisedFunction = aop.around(functionToAdvise, function (joinPoint) {
 advisedFunction(1, 2, 3);
 ```
 
-#### ProceedingJoinPoint
+### ProceedingJoinPoint
 
 ```javascript
 joinPoint = {
     // 函数被调用时的上下文
-    target: <any type>,
+    target: Object,
 
     // 传给外层函数的参数
     args: Array,
@@ -195,11 +193,169 @@ joinPoint = {
 
 ### Object Method API
 
-组合 Aspect，提供针对对象方法拦截的 API
+每个拦截接口都接收三个参数：被拦截对象，方法匹配规则 matcher，通知执行函数。
+
+matcher 可为 string, Regex, Function 的任意一种，为 Function 时，接收被拦截对象作为唯一参数，执行结果返回 true 时，匹配成功，会对该方法执行拦截。
+
+每个拦截接口都会返回一个原对象的代理对象，代理对象会针对符合匹配规则的方法封装，根据通知类型，在方法执行的不同阶段，执行相关的通知逻辑。
+
+**注：原对象不受任何影响**
+
+#### before(objectToAdvise, matcher, beforeFunction)
+
+返回一个新的代理对象, 在 matcher 匹配的方法执行前，会执行 beforeFunction，beforeFunction 接收匹配方法执行时的参数
+
+**除非抛异常, 否则不会中断匹配方法的执行**
+
+```javascript
+var toAdvise = {
+    method: function () {
+         console.log('method exec');
+    }
+};
+
+var advisedObject = aop.before(toAdvise, 'method', function (arg) {
+      console.log('before method exec');
+      console.log(arg);
+});
+
+// log:
+// before method exec
+// a
+// method exec
+advisedObject.method('a');
+
+// log:
+// method exec
+toAdvise.method('a');
+```
+
+#### afterReturning(objectToAdvise, matcher, afterReturningFunction)
+
+返回一个新的代理对象, 在 matcher 匹配的方法正常执行后, 执行 afterReturningFunction,
+afterReturningFunction 接收匹配方法执行后的返回结果作为唯一参数, 不影响返回结果.
+
+```javascript
+var toAdvise = {
+    method: function () {
+         console.log('method exec');
+         return 'toAdivse method result';
+    }
+};
+
+var advisedObject = aop.afterReturning(toAdvise, 'method', function (returnValue) {
+    console.log('return value: ', returnValue);
+});
+
+// log:
+// method exec
+// return value: toAdivse method result
+advisedObject.method();
+```
+
+#### afterThrowing(objectToAdvise, matcher, afterThrowingFunction)
+
+返回一个新的代理对象, 在 matcher 匹配的方法抛出异常后, 执行 afterThrowingFunction,
+afterThrowingFunction 接收匹配方法抛出的异常对象作为唯一参数.
+
+**通知不会吞噬原有异常, 会在 afterThrowingFunction 执行完毕后, 抛出原有异常**
+
+```javascript
+var toAdvise = {
+    method: function (throwError) {
+         console.log('method exec');
+         if(throwError) {
+            throw new Error('method error');
+          }
+    }
+};
+
+var advisedObject = aop.afterThrowing(functionToAdvise, 'method', function (e) {
+    console.log('execption: ', e.message);
+});
+
+// log:
+// method exec
+advisedObject.method();
+
+// log:
+// method exec
+// execption: method error
+advisedObject.method(true);
+```
+
+#### after(objectToAdvise, matcher, afterFunction)
+
+返回一个新的代理对象, 在 matcher 匹配的方法正常返回或抛出异常后, 执行 afterFunction,
+afterFunction 接收匹配方法抛出的异常对象作为唯一参数.
+
+**通知不会吞噬原有异常, 会在 afterFunction 执行完毕后, 抛出原有异常**
+
+```javascript
+var toAdvise = {
+    method: function (throwError) {
+        if(throwError) {
+           console.log('method exception');
+           throw new Error('error');
+        }
+
+        console.log('method exec');
+    }
+};
+
+var advisedObject = aop.after(functionToAdvise, 'method', function () {
+    console.log('after method exec');
+});
+
+// log:
+// method exec
+// after method exec
+advisedObject.method();
+
+// log:
+// method exception
+// after method exec
+advisedObject.method(true);
+```
+
+#### around(objectToAdvise, matcher, aroundFunction)
+
+返回一个新的代理对象, 在 matcher 匹配的方法执行时, 执行 aroundFunction, aroundFunction 接收一个 ProceedingJoinPoint 对象作为参数,
+调用其 proceed/proceedApply 方法将执行原方法.
+
+```javascript
+var toAdvise = {
+    method: function () {
+        console.log('method exec arguments: ', [].slice.call(arguments, 0));
+        return 'method return value';
+    }
+};
+
+var advisedObject = aop.around(functionToAdvise, 'method', function (joinPoint) {
+    console.log('before method exec');
+    // proceed/proceddApply 可以多次调用, 会多次执行原方法, proceedApply 可以改变 this 和参数信息
+    var result = joinPoint.proceed();
+    result = joinPoint.proceedApply(null, [1, 2]);
+    console.log('method exec result: ', result);
+    console.log('after method exec');
+});
+
+// log:
+// before method exec
+// method exec arguments: 1,2,3
+// method exec arguments: 1,2
+// method exec result: method return value
+// after method exec
+advisedFunction(1, 2, 3);
+```
+
+#### ProceedingJoinPoint
+
+同 Function API 下的 ProceedingJoinPoint
 
 #### ObjectProxy
 
-对象拦截代理
+对象拦截代理, 内部实现
 
 ### Class Method API
 
