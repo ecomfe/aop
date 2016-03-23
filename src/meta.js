@@ -1,4 +1,9 @@
 /**
+ * @file 元数据定义
+ * @author exodia(d_xinxin@163.com)
+ */
+
+/**
  *  around advice 执行时的连接点
  *
  * @typedef {Object} ProceedingJoinPoint

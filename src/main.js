@@ -17,5 +17,5 @@ function createAdviceAPI(adviceType) {
         if (typeof toAdvise === 'function') {
             return functionAdvice[adviceType](toAdvise, matcher);
         }
-    }
+    };
 }

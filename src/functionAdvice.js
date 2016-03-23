@@ -17,7 +17,7 @@ export function before(functionToAdvise, beforeAdvice) {
         if (this instanceof beforeAdvisedFunction) {
             let proxy = Object.create(functionToAdvise.prototype);
             beforeAdvice.apply(proxy, args);
-            return applyConstructor(functionToAdvise, proxy, args)
+            return applyConstructor(functionToAdvise, proxy, args);
         }
 
         beforeAdvice.apply(this, args);
@@ -100,8 +100,8 @@ export function after(functionToAdvise, afterAdvice) {
  * 调用其 proceed/proceedApply 方法将执行 functionToAdvise.
  *
  * @param {Function} functionToAdvise 被拦截函数
- * @param {aroundAdvice} aroundAdvice
- * @returns {Function} 组装了拦截功能后的函数
+ * @param {aroundAdvice} aroundAdvice 环绕通知函数
+ * @return {Function} 组装了拦截功能后的函数
  */
 export function around(functionToAdvise, aroundAdvice) {
     return function aroundAdvisedFunction(...args) {
@@ -112,6 +112,7 @@ export function around(functionToAdvise, aroundAdvice) {
             proceed: null,
             proceedApply: null
         };
+
         // constructor interception
         if (this instanceof aroundAdvisedFunction) {
             let proxy = joinPoint.target = Object.create(functionToAdvise.prototype);
@@ -123,8 +124,8 @@ export function around(functionToAdvise, aroundAdvice) {
             joinPoint.proceedApply = (scope, ...args) => functionToAdvise.apply(scope, args);
         }
 
-        return aroundAdvice.call(joinPoint.target, joinPoint)
-    }
+        return aroundAdvice.call(joinPoint.target, joinPoint);
+    };
 }
 
 function applyConstructor(constructor, instance, args) {
