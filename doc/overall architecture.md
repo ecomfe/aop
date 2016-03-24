@@ -25,7 +25,7 @@
 
 ### PointCut/Matcher
 
-切点（连接点筛选）功能, 内部概念, 外部感知为 string, Regex, Function 三个类型
+切点（连接点筛选）功能, 内部概念, 外部感知为 string, RegExp, Function 三个类型
 
 - StringPointCut 字符串过滤匹配
 - RegexPointCut 正则过滤匹配
@@ -193,9 +193,11 @@ joinPoint = {
 
 ### Object Method API
 
+提供针对对象方法的拦截。
+
 每个拦截接口都接收三个参数：被拦截对象，方法匹配规则 matcher，通知执行函数。
 
-matcher 可为 string, Regex, Function 的任意一种，为 Function 时，接收被拦截对象作为唯一参数，执行结果返回 true 时，匹配成功，会对该方法执行拦截。
+matcher 可为 string, RegExp, Function 的任意一种，为 Function 时，接收被拦截对象和当前方法名作为参数，执行结果返回 true 时，匹配成功，会对该方法执行拦截。
 
 每个拦截接口都会返回一个原对象的代理对象，代理对象会针对符合匹配规则的方法封装，根据通知类型，在方法执行的不同阶段，执行相关的通知逻辑。
 
@@ -270,7 +272,7 @@ var toAdvise = {
     }
 };
 
-var advisedObject = aop.afterThrowing(functionToAdvise, 'method', function (e) {
+var advisedObject = aop.afterThrowing(toAdvise, 'method', function (e) {
     console.log('execption: ', e.message);
 });
 
@@ -286,8 +288,7 @@ advisedObject.method(true);
 
 #### after(objectToAdvise, matcher, afterFunction)
 
-返回一个新的代理对象, 在 matcher 匹配的方法正常返回或抛出异常后, 执行 afterFunction,
-afterFunction 接收匹配方法抛出的异常对象作为唯一参数.
+返回一个新的代理对象, 在 matcher 匹配的方法正常返回或抛出异常后, 执行 afterFunction。
 
 **通知不会吞噬原有异常, 会在 afterFunction 执行完毕后, 抛出原有异常**
 
@@ -303,7 +304,7 @@ var toAdvise = {
     }
 };
 
-var advisedObject = aop.after(functionToAdvise, 'method', function () {
+var advisedObject = aop.after(toAdvise, 'method', function () {
     console.log('after method exec');
 });
 
@@ -331,7 +332,7 @@ var toAdvise = {
     }
 };
 
-var advisedObject = aop.around(functionToAdvise, 'method', function (joinPoint) {
+var advisedObject = aop.around(toAdvise, 'method', function (joinPoint) {
     console.log('before method exec');
     // proceed/proceddApply 可以多次调用, 会多次执行原方法, proceedApply 可以改变 this 和参数信息
     var result = joinPoint.proceed();
@@ -346,12 +347,41 @@ var advisedObject = aop.around(functionToAdvise, 'method', function (joinPoint) 
 // method exec arguments: 1,2
 // method exec result: method return value
 // after method exec
-advisedFunction(1, 2, 3);
+advisedObject.method(1, 2, 3);
 ```
 
-#### ProceedingJoinPoint
+### ProceedingJoinPoint
 
-同 Function API 下的 ProceedingJoinPoint
+同Function API 下的 ProceedingJoinPoint
+
+### Matcher
+
+matcher 可以为以下三种类型:
+
+- string 匹配拦截对象中属性名与 matcher 相等的方法。
+- RegExp 匹配拦截对象中属性名符合 matcher 规则的方法。
+- Function 匹配拦截对象中属性名符合 matcher 执行结果的方法， matcher 接收拦截对象和当前属性名称作为参数，返回 true 则表示匹配成功。
+
+```javascript
+var toAdvise = {
+    method: function () {},
+    foo: function () {},
+    foo1: function () {},
+    foo2: function () {},
+    init: function () {}
+};
+// 将拦截 toAdise.method
+var advisedObject = aop.before(toAdvise, 'method', function () {});
+
+// 将拦截 toAdise.foo, toAdise.foo1, toAdise.foo2
+var advisedObject = aop.before(toAdvise, /^foo/, function () {});
+
+var fnMatcher = function (obj, name) {
+    return name !== 'init';
+};
+// 将拦截 toAdise.foo, toAdise.foo1, toAdise.foo2, toAdvise.method
+var advisedObject = aop.before(toAdvise, fnMatcher, function () {});
+```
 
 #### ObjectProxy
 
