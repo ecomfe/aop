@@ -16,12 +16,43 @@
 
 ### Advice
 
-通知功能:
+通知接口:
 
-- BeforeAdvice: 前向
-- AfterReturningAdvice 返回
-- AfterThrowingAdvice 异常
-- AroundAdvice 环绕
+- BeforeAdvice: 前向通知接口
+```javascript
+BeforeAdvice = {
+    before: Function
+}
+```
+
+- AfterReturningAdvice 返回通知接口
+```javascript
+AfterReturningAdvice = {
+    afterReturning: Function
+}
+```
+
+- AfterThrowingAdvice 异常通知接口
+```javascript
+AfterThrowingAdvice = {
+    afterThrowing: Function
+}
+```
+
+- After 异常或返回通知接口
+```javascript
+AfterThrowingAdvice = {
+    afterThrowing: Function
+}
+```
+
+- AroundAdvice 环绕通知接口
+```javascript
+AfterThrowingAdvice = {
+    around: Function
+}
+```
+
 
 ### PointCut/Matcher
 
@@ -30,6 +61,18 @@
 - StringPointCut 字符串过滤匹配
 - RegexPointCut 正则过滤匹配
 - FunctionPointCut 函数过滤匹配
+
+### Advisor
+
+```javascript
+Advisor = {
+    // 切点/匹配器, 为字符串,正则,函数三种, 见 PointCut/Matcher
+    matcher: Matcher,
+
+    // 通知对象, 实现了 BeforeAdvice, AfterReturningAdvice, AfterThrowingAdvice, After, AroundAdvice 之一
+    advice: Advice
+}
+```
 
 ### Aspect
 
@@ -350,6 +393,14 @@ var advisedObject = aop.around(toAdvise, 'method', function (joinPoint) {
 advisedObject.method(1, 2, 3);
 ```
 
+#### createObjectProxy(Object : target, Advisor[] : advisors)
+
+根据传入的 target 和 advisors 创建一个拦截代理对象
+
+#### setObjectProxy(ObjectProxyFactory : factory)
+
+设置代理对象工厂
+
 ### ProceedingJoinPoint
 
 同Function API 下的 ProceedingJoinPoint
@@ -383,9 +434,39 @@ var fnMatcher = function (obj, name) {
 var advisedObject = aop.before(toAdvise, fnMatcher, function () {});
 ```
 
-#### ObjectProxy
+### ObjectProxyFactory
 
-对象拦截代理, 内部实现
+对象拦截代理工厂, 能够动态添加Advisor，根据 advisor 创建组装了aop 通知的代理对象。
+
+通过 ObjectProxyFactory 可以一次性的创建出组装了多个 advice 的对象。高级使用者可以继承此工厂自定义一些功能。
+
+#### ObjectProxyFactory#constructor(Object : target[, Advisor[] : advisors])
+
+根据给定的要代理的对象和advisor数组创建一个代理对象工厂。
+
+#### Object : ObjectProxyFactory#createProxy()
+
+根据当前的被代理对象和 advisors 创建代理对象。
+
+#### ObjectProxyFactory#setTarget(Object : target)
+
+设置要代理的对象。
+
+#### ObjectProxyFactory#addAdvisor([number: pos, ]Advisor : advisor)
+
+在 advisors 链中指定位置添加新的 advisor，若忽略指定位置，则追加到末尾。
+
+#### Advisor[] : ObjectProxyFactory#getAdvisors()
+
+返回当前代理工厂实例的所有 advisor。
+
+#### bool : ObjectProxyFactory#removeAdvisor(number : index)
+
+移除指定位置的 advisor, 成功返回 true， 失败返回 false。
+
+#### bool : ObjectProxyFactory#removeAdvisor(Advisor : advisor)
+
+移除和参数匹配的advisor，成功返回 true，失败返回 false。
 
 ### Class Method API
 
