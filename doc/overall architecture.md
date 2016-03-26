@@ -397,10 +397,6 @@ advisedObject.method(1, 2, 3);
 
 根据传入的 target 和 advisors 创建一个拦截代理对象
 
-#### setObjectProxy(ObjectProxyFactory : factory)
-
-设置代理对象工厂
-
 ### ProceedingJoinPoint
 
 同Function API 下的 ProceedingJoinPoint
