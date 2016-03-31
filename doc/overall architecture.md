@@ -70,13 +70,9 @@ Advisor = {
     matcher: Matcher,
 
     // 通知对象, 实现了 BeforeAdvice, AfterReturningAdvice, AfterThrowingAdvice, After, AroundAdvice 之一
-    advice: Advice
+    advices: Advice
 }
 ```
-
-### Aspect
-
-切面功能：PointCut 和 Advice 的高阶整合
 
 ### IoC Bridge
 
@@ -222,7 +218,7 @@ joinPoint = {
     // 传给外层函数的参数
     args: Array,
 
-    // 原方法名
+    // 原方法名或函数名
     method: string,
 
     // 被调用时, 会调用被拦截的原函数, 并传入原始参数
@@ -435,6 +431,10 @@ var advisedObject = aop.before(toAdvise, fnMatcher, function () {});
 对象拦截代理工厂, 能够动态添加Advisor，根据 advisor 创建组装了aop 通知的代理对象。
 
 通过 ObjectProxyFactory 可以一次性的创建出组装了多个 advice 的对象。高级使用者可以继承此工厂自定义一些功能。
+
+#### ObjectProxyFactory.createProxy(Object : target[, Advisor[] : advisors])
+
+根据给定的要代理的对象和advisor数组创建一个代理对象。
 
 #### ObjectProxyFactory#constructor(Object : target[, Advisor[] : advisors])
 

@@ -28,7 +28,7 @@ describe('#afterThrowingAdvice', () => {
         expect(flag).toBe(false);
         expect(context).toBe(null);
 
-        expect(() => advisedFunction.call(obj, error)).toThrow(error);
+        expect(() => advisedFunction.call(obj, error)).toThrow();
         expect(expectException).toBe(error);
         expect(flag).toBe(true);
         expect(context).toBe(obj);

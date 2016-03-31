@@ -9,14 +9,15 @@ module.exports = function (config) {
 
         // frameworks to use
         // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-        frameworks: ['jasmine'],
+        frameworks: ['jasmine', 'requirejs'],
 
 
         // list of files / patterns to load in the browser
         files: [
             'node_modules/babel-polyfill/dist/polyfill.js',
-            {pattern: 'src/**/*.js'},
-            {pattern: 'test/spec/*.js'}
+            {pattern: 'src/**/*.js', included: false},
+            {pattern: 'test/spec/*.js', included: false},
+            'test/test-main.js'
         ],
 
 
