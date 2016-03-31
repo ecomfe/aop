@@ -1,5 +1,5 @@
-let TEST_REGEXP = /(test\/spec)/i;
-let allTestFiles = [];
+var TEST_REGEXP = /(test\/spec)/i;
+var allTestFiles = [];
 
 // Get a list of all the test files to include
 Object.keys(window.__karma__.files).forEach(function (file) {
