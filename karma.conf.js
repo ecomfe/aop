@@ -29,7 +29,7 @@ module.exports = function (config) {
         // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
         preprocessors: {
             'test/spec/*.js': ['babel', 'sourcemap'],
-            'src/**/*.js': ['babel', 'sourcemap']
+            'src/**/*.js': process.env.COVERAGE ? ['babel', 'sourcemap', 'coverage'] : ['babel', 'sourcemap']
         },
 
         babelPreprocessor: {
