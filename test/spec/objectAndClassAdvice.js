@@ -136,7 +136,9 @@ describe('#createClassProxy', () => {
 
     it('should not affect the origin Class intercepted', () => {
         let Proxy = aop.createClassProxy(Fixture, 'method1', fixtureAdvices);
+        let proxy = new Proxy();
         expect(Proxy).not.toBe(Fixture);
+        expect(proxy instanceof Fixture).toBe(true);
         expect(Proxy.prototype.method1 === Fixture.prototype.method1).toBe(false);
         expect(Proxy.prototype.method2 === Fixture.prototype.method2).toBe(true);
         expect(Proxy.prototype.method3 === Fixture.prototype.method3).toBe(true);
