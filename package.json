@@ -38,6 +38,8 @@
     "karma-ie-launcher": "^0.1.5",
     "karma-jasmine": "^0.2.2",
     "karma-phantomjs-launcher": "^0.1.4",
-    "karma-sourcemap-loader": "^0.3.7"
+    "karma-requirejs": "^0.2.6",
+    "karma-sourcemap-loader": "^0.3.7",
+    "requirejs": "^2.2.0"
   }
 }
