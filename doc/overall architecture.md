@@ -3,7 +3,6 @@
 1. function 拦截
 2. object method 拦截
 3. Class method 拦截
-4. ioc component method 拦截
 
 ## 总体架构
 ![aop 总体架构](./img/aop-architecture.png)
@@ -53,7 +52,6 @@ AfterThrowingAdvice = {
 }
 ```
 
-
 ### PointCut/Matcher
 
 切点（连接点筛选）功能, 内部概念, 外部感知为 string, RegExp, Function 三个类型
@@ -73,10 +71,6 @@ Advisor = {
     advices: Advice
 }
 ```
-
-### IoC Bridge
-
-IoC 桥接支持
 
 ### Function API
 
@@ -389,9 +383,9 @@ var advisedObject = aop.around(toAdvise, 'method', function (joinPoint) {
 advisedObject.method(1, 2, 3);
 ```
 
-#### createObjectProxy(Object : target, Advisor[] : advisors)
+#### createObjectProxy(Object : target, Matcher : matcher, Advices: advices)
 
-根据传入的 target 和 advisors 创建一个拦截代理对象
+根据传入的 target 和 matcher, advices 创建一个拦截代理对象
 
 ### ProceedingJoinPoint
 
@@ -413,16 +407,16 @@ var toAdvise = {
     foo2: function () {},
     init: function () {}
 };
-// 将拦截 toAdise.method
+// 将拦截 toAdvise.method
 var advisedObject = aop.before(toAdvise, 'method', function () {});
 
-// 将拦截 toAdise.foo, toAdise.foo1, toAdise.foo2
+// 将拦截 toAdvise.foo, toAdvise.foo1, toAdvise.foo2
 var advisedObject = aop.before(toAdvise, /^foo/, function () {});
 
 var fnMatcher = function (obj, name) {
     return name !== 'init';
 };
-// 将拦截 toAdise.foo, toAdise.foo1, toAdise.foo2, toAdvise.method
+// 将拦截 toAdvise.foo, toAdvise.foo1, toAdvise.foo2, toAdvise.method
 var advisedObject = aop.before(toAdvise, fnMatcher, function () {});
 ```
 
@@ -468,18 +462,10 @@ var advisedObject = aop.before(toAdvise, fnMatcher, function () {});
 
 提供针对Class方法拦截的 API
 
-#### createClassProxy(Function : target, Advisor[] : advisors)
+#### createClassProxy(Object : target, Matcher : matcher, Advices: advices)
 
-根据传入的 target 和 advisors 创建一个拦截代理类
+根据传入的 target, matcher, advices 创建一个拦截代理类
 
 #### ClassProxyFactory
 
 类拦截代理工厂, 继承 ObjectProxyFactory
-
-### IoC Component API
-
-基于IoC Bridge， 提供与 IoC 整合的配置语法
-
-
-
-

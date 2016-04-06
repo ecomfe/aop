@@ -1,6 +1,6 @@
 # Spring AOP
 
-##  连接点 JoinPoint 
+##  连接点 JoinPoint
 
 - 仅函数
 
@@ -13,6 +13,16 @@
 ## 配置方式
 
 - XML 配置化语法
+
+```java
+<aop:config>
+    <aop:aspect id="myAspect" ref="aBean">
+        <aop:pointcut id="businessService" expression="execution(* com.xyz.myapp.*)"/>
+        <aop:before pointcut-ref="businessService" method="monitor"/>
+    </aop:aspect>
+</aop:config>
+```
+
 - AdpectJ Style 注解
 
 ## 通知 Advice 类型
