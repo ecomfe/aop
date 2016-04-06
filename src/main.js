@@ -5,11 +5,12 @@
 
 import FunctionProxyFactory from './FunctionProxyFactory';
 import ObjectProxyFactory from './ObjectProxyFactory';
+import ClassProxyFactory from './ClassProxyFactory';
 
 
 /**
  * 创建一个组装了通知行为的函数代理
- * 
+ *
  * @param {Function} target 被拦截的函数
  * @param {Advices} advices 通知对象
  * @return {Function}
@@ -20,7 +21,7 @@ export let createFunctionProxy = function (target, advices) {
 
 /**
  * 创建一个组装了通知行为的对象代理
- * 
+ *
  * @param {Object} target 被拦截的对象
  * @param {string | FunctionMatcher | RegExp} matcher 匹配器
  * @param {Advices} advices 通知对象
@@ -30,9 +31,16 @@ export let createObjectProxy = function (target, matcher, advices) {
     return ObjectProxyFactory.createProxy(target, [{matcher, advices}]);
 };
 
-// todo: 待实现
-export let createClassProxy = function (target, matcher, advices) {
-
+/**
+ * 创建一个组装了通知行为的类代理
+ *
+ * @param {Function} Class 被拦截的类
+ * @param {string | FunctionMatcher | RegExp} matcher 匹配器
+ * @param {Advices} advices 通知对象
+ * @return {Function}
+ */
+export let createClassProxy = function (Class, matcher, advices) {
+    return ClassProxyFactory.createProxy(Class, [{matcher, advices}]);
 };
 
 export let before = createAdviceAPI('before');

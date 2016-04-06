@@ -7,7 +7,7 @@
     "doc": "doc"
   },
   "scripts": {
-    "test": "karma start --single-run",
+    "test": "COVERAGE=1 karma start --single-run",
     "start": "karma start"
   },
   "repository": {

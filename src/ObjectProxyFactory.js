@@ -16,7 +16,7 @@ const CACHED_PROXY = Symbol('cachedProxy');
 export default class ObjectProxyFactory {
     /**
      * 根据传入的对象和 advisors 数组创建一个代理
-     * 
+     *
      * @static
      * @param {Object} target 被代理的对象
      * @param {Advisor[]} advisors 通知者数组
@@ -28,7 +28,7 @@ export default class ObjectProxyFactory {
 
     /**
      * 根据传入的对象和 advisors 数组创建一个代理工厂实例
-     * 
+     *
      * @constructor
      * @param {Object} target 拦截对象
      * @param {Advisor[]} advisors 通知者数组
@@ -41,7 +41,7 @@ export default class ObjectProxyFactory {
 
     /**
      * 设置要拦截的对象
-     * 
+     *
      * @param {Object} target
      */
     setTarget(target) {
@@ -51,7 +51,7 @@ export default class ObjectProxyFactory {
 
     /**
      * 获取当前代理工厂的advisors
-     * 
+     *
      * @return {Advisor[]}
      */
     getAdvisors() {
@@ -60,7 +60,7 @@ export default class ObjectProxyFactory {
 
     /**
      * 在指定位置增加 advisor, 若不指定位置则追加到末尾
-     * 
+     *
      * @param {number} [index] advisor 要插入的索引位置
      * @param {Advisor} advisor 要插入的 advisor
      */
@@ -76,7 +76,7 @@ export default class ObjectProxyFactory {
 
     /**
      * 移除指定位置或者匹配的 advisor,
-     * 
+     *
      * @param {number | Advisor} index 索引位置或要移除的 advisor
      * @return {boolean} 移除成功返回 true
      */
@@ -92,25 +92,26 @@ export default class ObjectProxyFactory {
 
         return result;
     }
-    
+
     // todo: 优化(打平)继承层次
     /**
      * 创建一个代理对象
-     * 
+     *
      * @return {Object}
      */
     createProxy() {
         if (this[CACHED_PROXY]) {
-            return Object.create(this[CACHED_PROXY]);
+            return this.inherit(this[CACHED_PROXY]);
         }
-        
+
         let proxy = this[TARGET];
-        if (!this[ADVISORS].length) {
-            proxy = Object.create(proxy);
+        let advisors = this.getAdvisors();
+        if (!advisors.length) {
+            proxy = this.inherit(proxy);
         }
         else {
-            for (let advisor of this[ADVISORS]) {
-                proxy = createProxyObject(proxy, advisor);
+            for (let advisor of advisors) {
+                proxy = this.inherit(proxy, createAdvisedDescriptors(this.getPrototypeChainHead(proxy), advisor));
             }
         }
 
@@ -118,16 +119,39 @@ export default class ObjectProxyFactory {
 
         return this[CACHED_PROXY];
     }
+
+    /**
+     * 继承一个对象
+     * 
+     * @protected
+     * @param {Object} target 要继承的对象
+     * @param {Object} descriptors 属性描述符
+     * @return {Object} 继承后的对象
+     */
+    inherit(target, descriptors) {
+        return Object.create(target, descriptors);
+    }
+
+    /**
+     * 获取对象的原型链头部
+     * 
+     * @protected
+     * @param {Object} target 待获取的对象
+     * @returns {Object | null} 返回头部原型链
+     */
+    getPrototypeChainHead(target) {
+        return target;
+    }
 }
 
-function createProxyObject(obj, {matcher, advices}) {
+function createAdvisedDescriptors(obj, {matcher, advices}) {
     let matchedDescriptors = getMatchedMethodDescriptors(obj, matcher);
     let descriptors = Object.create(null);
     for (let key in matchedDescriptors) {
         descriptors[key] = createAdvisedProperty(matchedDescriptors[key], advices, key);
     }
 
-    return Object.create(obj, descriptors);
+    return descriptors;
 }
 
 function createAdvisedProperty(descriptor, advices, name) {

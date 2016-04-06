@@ -466,11 +466,15 @@ var advisedObject = aop.before(toAdvise, fnMatcher, function () {});
 
 ### Class Method API
 
-组合 Aspect，提供针对Class方法拦截的 API
+提供针对Class方法拦截的 API
 
-#### ClassProxy
+#### createClassProxy(Function : target, Advisor[] : advisors)
 
-类拦截代理
+根据传入的 target 和 advisors 创建一个拦截代理类
+
+#### ClassProxyFactory
+
+类拦截代理工厂, 继承 ObjectProxyFactory
 
 ### IoC Component API
 
