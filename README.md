@@ -41,18 +41,31 @@ Advisor = {
 }
 ```
 
-## 使用
+## 安装
 
-### 安装
+node
 
 ```shell
 npm install uaop
 ```
+Browser global
+
+```html
+<script src="path/uaop/dist/bundle.js"></script>
+```
+
+模块环境
 
 ```javascript
 import * as aop from 'uaop'; // es6
 // var aop = require('uaop'); // AMD/CMD
 // window.uaop // global
+```
+
+## 快速使用
+
+```javascript
+import * as aop from 'uaop'; // es6
 
 function doSomething() {
     console.log('doSomething');
