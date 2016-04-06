@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="../node_modules/requirejs/require.js"></script>
+    <title>Aop demo</title>
+</head>
+<body>
+<script>
+    require.config({
+        baseUrl: '../',
+        packages: [
+            {
+                name: 'aop',
+                main: 'bundle',
+                location: 'dist'
+            }
+        ]
+    });
+
+    require(['aop'], function (aop) {
+        var func = aop.before(
+            function () {
+                console.log('method called!');
+            },
+            function () {
+                console.log('before method called');
+            }
+        );
+
+        func();
+    });
+</script>
+</body>
+</html>
