@@ -59,10 +59,7 @@ function createAdviceAPI(adviceType) {
             case 2:
                 return createFunctionProxy(toAdvise, {[adviceType]: matcher});
             case 3:
-                return createObjectProxy(
-                    toAdvise,
-                    [{matcher, advice: {[adviceType]: adviceFunction}}]
-                );
+                return createObjectProxy(toAdvise, matcher, {[adviceType]: adviceFunction});
         }
     };
 }
