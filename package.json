@@ -1,6 +1,6 @@
 {
   "name": "uaop",
-  "version": "0.0.1-alpha.1",
+  "version": "0.0.1-alpha.2",
   "description": "unknown aop",
   "main": "dist/bundle.js",
   "directories": {
@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Exodia/aop.git"
+    "url": "git+https://github.com/ecomfe/aop.git"
   },
   "keywords": [
     "aop"
@@ -24,9 +24,9 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Exodia/aop/issues"
+    "url": "https://github.com/ecomfe/aop/issues"
   },
-  "homepage": "https://github.com/Exodia/aop#readme",
+  "homepage": "https://github.com/ecomfe/aop#readme",
   "devDependencies": {
     "babel-plugin-transform-es2015-modules-umd": "^6.6.5",
     "babel-polyfill": "^6.7.2",
