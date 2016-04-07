@@ -3,7 +3,6 @@
 1. function 拦截
 2. object method 拦截
 3. Class method 拦截
-4. ioc component method 拦截
 
 ## 总体架构
 ![aop 总体架构](./img/aop-architecture.png)
@@ -16,12 +15,42 @@
 
 ### Advice
 
-通知功能:
+通知接口:
 
-- BeforeAdvice: 前向
-- AfterReturningAdvice 返回
-- AfterThrowingAdvice 异常
-- AroundAdvice 环绕
+- BeforeAdvice: 前向通知接口
+```javascript
+BeforeAdvice = {
+    before: Function
+}
+```
+
+- AfterReturningAdvice 返回通知接口
+```javascript
+AfterReturningAdvice = {
+    afterReturning: Function
+}
+```
+
+- AfterThrowingAdvice 异常通知接口
+```javascript
+AfterThrowingAdvice = {
+    afterThrowing: Function
+}
+```
+
+- After 异常或返回通知接口
+```javascript
+AfterThrowingAdvice = {
+    afterThrowing: Function
+}
+```
+
+- AroundAdvice 环绕通知接口
+```javascript
+AfterThrowingAdvice = {
+    around: Function
+}
+```
 
 ### PointCut/Matcher
 
@@ -31,13 +60,17 @@
 - RegexPointCut 正则过滤匹配
 - FunctionPointCut 函数过滤匹配
 
-### Aspect
+### Advisor
 
-切面功能：PointCut 和 Advice 的高阶整合
+```javascript
+Advisor = {
+    // 切点/匹配器, 为字符串,正则,函数三种, 见 PointCut/Matcher
+    matcher: Matcher,
 
-### IoC Bridge
-
-IoC 桥接支持
+    // 通知对象, 实现了 BeforeAdvice, AfterReturningAdvice, AfterThrowingAdvice, After, AroundAdvice 之一
+    advices: Advice
+}
+```
 
 ### Function API
 
@@ -179,7 +212,7 @@ joinPoint = {
     // 传给外层函数的参数
     args: Array,
 
-    // 原方法名
+    // 原方法名或函数名
     method: string,
 
     // 被调用时, 会调用被拦截的原函数, 并传入原始参数
@@ -350,6 +383,10 @@ var advisedObject = aop.around(toAdvise, 'method', function (joinPoint) {
 advisedObject.method(1, 2, 3);
 ```
 
+#### createObjectProxy(Object : target, Matcher : matcher, Advices: advices)
+
+根据传入的 target 和 matcher, advices 创建一个拦截代理对象
+
 ### ProceedingJoinPoint
 
 同Function API 下的 ProceedingJoinPoint
@@ -370,35 +407,65 @@ var toAdvise = {
     foo2: function () {},
     init: function () {}
 };
-// 将拦截 toAdise.method
+// 将拦截 toAdvise.method
 var advisedObject = aop.before(toAdvise, 'method', function () {});
 
-// 将拦截 toAdise.foo, toAdise.foo1, toAdise.foo2
+// 将拦截 toAdvise.foo, toAdvise.foo1, toAdvise.foo2
 var advisedObject = aop.before(toAdvise, /^foo/, function () {});
 
 var fnMatcher = function (obj, name) {
     return name !== 'init';
 };
-// 将拦截 toAdise.foo, toAdise.foo1, toAdise.foo2, toAdvise.method
+// 将拦截 toAdvise.foo, toAdvise.foo1, toAdvise.foo2, toAdvise.method
 var advisedObject = aop.before(toAdvise, fnMatcher, function () {});
 ```
 
-#### ObjectProxy
+### ObjectProxyFactory
 
-对象拦截代理, 内部实现
+对象拦截代理工厂, 能够动态添加Advisor，根据 advisor 创建组装了aop 通知的代理对象。
+
+通过 ObjectProxyFactory 可以一次性的创建出组装了多个 advice 的对象。高级使用者可以继承此工厂自定义一些功能。
+
+#### ObjectProxyFactory.createProxy(Object : target[, Advisor[] : advisors])
+
+根据给定的要代理的对象和advisor数组创建一个代理对象。
+
+#### ObjectProxyFactory#constructor(Object : target[, Advisor[] : advisors])
+
+根据给定的要代理的对象和advisor数组创建一个代理对象工厂。
+
+#### Object : ObjectProxyFactory#createProxy()
+
+根据当前的被代理对象和 advisors 创建代理对象。
+
+#### ObjectProxyFactory#setTarget(Object : target)
+
+设置要代理的对象。
+
+#### ObjectProxyFactory#addAdvisor([number: pos, ]Advisor : advisor)
+
+在 advisors 链中指定位置添加新的 advisor，若忽略指定位置，则追加到末尾。
+
+#### Advisor[] : ObjectProxyFactory#getAdvisors()
+
+返回当前代理工厂实例的所有 advisor。
+
+#### bool : ObjectProxyFactory#removeAdvisor(number : index)
+
+移除指定位置的 advisor, 成功返回 true， 失败返回 false。
+
+#### bool : ObjectProxyFactory#removeAdvisor(Advisor : advisor)
+
+移除和参数匹配的advisor，成功返回 true，失败返回 false。
 
 ### Class Method API
 
-组合 Aspect，提供针对Class方法拦截的 API
+提供针对Class方法拦截的 API
 
-#### ClassProxy
+#### createClassProxy(Object : target, Matcher : matcher, Advices: advices)
 
-类拦截代理
+根据传入的 target, matcher, advices 创建一个拦截代理类
 
-### IoC Component API
+#### ClassProxyFactory
 
-基于IoC Bridge， 提供与 IoC 整合的配置语法
-
-
-
-
+类拦截代理工厂, 继承 ObjectProxyFactory

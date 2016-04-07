@@ -1,14 +1,15 @@
 {
   "name": "uaop",
-  "version": "0.0.1",
+  "version": "0.0.1-alpha.1",
   "description": "unknown aop",
-  "main": "main.js",
+  "main": "dist/bundle.js",
   "directories": {
     "doc": "doc"
   },
   "scripts": {
-    "test": "karma start --single-run",
-    "start": "karma start"
+    "test": "COVERAGE=1 karma start --single-run",
+    "start": "karma start",
+    "build": "node scripts/build.js"
   },
   "repository": {
     "type": "git",
@@ -38,6 +39,9 @@
     "karma-ie-launcher": "^0.1.5",
     "karma-jasmine": "^0.2.2",
     "karma-phantomjs-launcher": "^0.1.4",
-    "karma-sourcemap-loader": "^0.3.7"
+    "karma-requirejs": "^0.2.6",
+    "karma-sourcemap-loader": "^0.3.7",
+    "requirejs": "^2.2.0",
+    "systemjs-builder": "^0.15.14"
   }
 }
