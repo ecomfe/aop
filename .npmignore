@@ -1,0 +1,7 @@
+demo/
+scripts/
+test/
+doc/
+.travis.yml
+.editorconfig
+karma.conf.js
