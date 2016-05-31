@@ -43,5 +43,8 @@
     "karma-sourcemap-loader": "^0.3.7",
     "requirejs": "^2.2.0",
     "systemjs-builder": "^0.15.14"
+  },
+  "edp": {
+    "main": "main"
   }
 }
