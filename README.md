@@ -32,11 +32,11 @@ Advisor = {
 
     // 通知对象, 拥有 before, afterReturning, afterThrowing, after, around 中一个或多个方法
     advices: {
-       before(...args) { //... },
-       after() { // ... },
-       afterReturning(returnValue) { // ... },
-       afterThrowing(exception) { // ... },
-       around(joinPoint) { // ... }
+       before(...args) { /* ... */},
+       after() { /* ... */ },
+       afterReturning(returnValue) { /* ... */ },
+       afterThrowing() { /* ... */ },
+       around(joinPoint) { /* ... */ }
     }
 }
 ```
